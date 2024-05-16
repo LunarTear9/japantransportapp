@@ -1,15 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:japanmetroline/alltrains.dart';
+import 'package:japanmetroline/stationinfo.dart';
 
+int DurationVariable = 0;
 Color ListTileColor = Color(0xffb0bf1e);
 String line = 'Shinjuku';
+int buttonFlag = 1;
 String currentRegion = 'Shinjuku';
+dynamic buttonColor3 = ListTileColor;
+int buttonTrigger = 0;
+dynamic buttonColor2 = const Color.fromARGB(148, 231, 231, 231);
+
+Future<List<Map<String, dynamic>>> fetchTrainInformation(Line) async {
+    final response = await http.get(
+        Uri.parse('https://api-public.odpt.org/api/v4/odpt:Station?odpt:railway=odpt.Railway:Toei.$Line&odpt:operator=odpt.Operator:Toei')); // Replace with your API endpoint
+print('apicall');
+    if (response.statusCode == 200) {
+      final List<dynamic> responseData = json.decode(response.body);
+      return responseData.map((data) => data as Map<String, dynamic>).toList();
+    } else {
+      throw Exception('Failed to load train information');
+    }
+  }
 
 Future<List<Map<String, dynamic>>> fetchTrainData(Line) async {
   final response = await http.get(Uri.parse('https://api-public.odpt.org/api/v4/odpt:Train?odpt:railway=odpt.Railway:Toei.$Line&odpt:operator=odpt.Operator:Toei'));
+  
   print('apicall');
   if (response.statusCode == 200) {
     final List<dynamic> responseData = json.decode(response.body);
@@ -39,13 +60,13 @@ class MyHomePage extends StatefulWidget {
   @override
   State<MyHomePage> createState() => _MyHomePageState();
 }
-
 class _MyHomePageState extends State<MyHomePage> {
   String currentAssetImage = 'lib/assets/C.png';
   String hoveredAssetImage = '';
 
   // Define trainData variable here
   List<Map<String, dynamic>>? trainData = [];
+  bool isButton3Pressed = true;
 
   @override
   void initState() {
@@ -108,14 +129,65 @@ class _MyHomePageState extends State<MyHomePage> {
                           ),
                           
                         ),
-                        Text('$currentRegion',style: GoogleFonts.exo2(color: ListTileColor),textScaleFactor: 4,),
+                        Text('$currentRegion',style: GoogleFonts.exo2(color: ListTileColor),textScaleFactor: 4,).animate().slideX(begin: -0.2,duration: Duration(milliseconds: 500 + DurationVariable)).fadeIn(duration: Duration(milliseconds: 500)),
+                        Row(
+  
+  children: [
+    Expanded(
+      child: ElevatedButton(
+        style: ButtonStyle(
+          minimumSize: MaterialStateProperty.all(Size(200, 50)),
+          backgroundColor: MaterialStateProperty.all(buttonColor3),
+          shape: MaterialStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(10),topRight: Radius.circular(10)),
+            ),
+          ),
+        ),
+        onPressed: () {
+          setState(() {
+            buttonColor3 = ListTileColor;
+            buttonColor2 = Color.fromARGB(148, 231, 231, (231 + buttonTrigger));
+            buttonFlag = 1;
+            isButton3Pressed = true;
+          });
+        },
+        child: Text("Station Info"),
+      ),
+    ),
+    // Add some spacing between buttons
+    Expanded(
+      child: ElevatedButton(
+        
+        style: ButtonStyle(
+          minimumSize: MaterialStateProperty.all(Size(200, 50)),
+          backgroundColor: MaterialStateProperty.all(buttonColor2),
+          shape: MaterialStateProperty.all(
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(topLeft: Radius.circular(10),topRight: Radius.circular(10))
+            ),
+          ),
+        ),
+        onPressed: () {
+          setState(() {
+            buttonColor2 = ListTileColor;
+            buttonColor3 = const Color.fromARGB(148, 231, 231, 231);
+            buttonFlag = 0;
+            isButton3Pressed = false;
+          });
+        },
+        child: Text("All Trains"),
+      ),
+    ),
+  ],
+),
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.only(bottomRight: Radius.circular(10),bottomLeft: Radius.circular(10 )),
                           child: Container(
                             height: 800,
                             width: 1200,
                             color: const Color.fromARGB(148, 231, 231, 231),
-                            child: MyList(trainData: trainData), // Pass trainData to MyList
+                            child: !isButton3Pressed ? MyList(trainData: trainData) : TrainInfoList(),
                           ),
                         ),
                       ],
@@ -129,6 +201,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
+
   String _getCurrentTime() {
     var now = DateTime.now();
     var japanTime = now.toUtc().add(Duration(hours: 9)); // Japan timezone is UTC+9
@@ -156,79 +229,103 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  void onButtonAClicked() {
-    // Custom action for button A
+  void onButtonAClicked() async {
+  setState(() async {
+    ListTileColor = const Color(0xffec6e65);
+    line = 'Asakusa';
+    currentRegion = 'Asakusa';
+    DurationVariable = 1;
+    buttonTrigger = 0;
+if(isButton3Pressed == true){
+  isButton3Pressed = false;
+}
+
+    
+      
+      buttonColor2 = ListTileColor;
+      buttonColor3 = const Color.fromARGB(148, 231, 231, 231);
+
+
+      try {
+    final data = await fetchTrainData(line);
     setState(() {
-      ListTileColor = Color(0xffec6e65);
-      line = 'Asakusa';
-      fetchTrainData(line).then((data) {
-        setState(() {
-          trainData = data;
-          currentRegion = 'Asakusa';
-        });
-      }).catchError((error) {
-        print('Error fetching train data: $error');
-      });
-
+      trainData = data;
     });
-    print('Button A clicked');
+  } catch (error) {
+    print('Error fetching train data: $error');
   }
 
-  void onButtonEClicked() {
-    // Custom action for button E
-    ListTileColor = Color(0xffce045b);
+  print('Button A clicked');
+
+    
+  });
+
+  }
+
+void onButtonEClicked() async {
+  setState(() async {
+    ListTileColor = const Color(0xffce045b);
     line = 'Oedo';
-    fetchTrainData(line).then((data) {
-      setState(() {
-        trainData = data;
-        currentRegion = 'Oedo';
-      });
-    }).catchError((error) {
-      print('Error fetching train data: $error');
-    });
-    print('Button E clicked');
-  }
+    currentRegion = 'Oedo';
+    DurationVariable = 0;
+    buttonTrigger = 1;
+    if(isButton3Pressed == true){
+  isButton3Pressed = false;
+}
 
-  void onButtonSClicked() {
-    // Custom action for button S
-    ListTileColor = Color(0xffb0bf1e);
+    
+   
+    
+      buttonColor2 = ListTileColor;
+      buttonColor3 = const Color.fromARGB(148, 231, 231, 231);
+      try {
+    final data = await fetchTrainData(line);
+    setState(() {
+      trainData = data;
+    });
+  } catch (error) {
+    print('Error fetching train data: $error');
+  }
+    
+  });
+
+  
+
+  print('Button E clicked');
+}
+
+void onButtonSClicked() async {
+  setState(() async {
+    ListTileColor = const Color(0xffb0bf1e);
     line = 'Shinjuku';
-    fetchTrainData(line).then((data) {
-      setState(() {
-        trainData = data;
-        currentRegion = 'Shinjuku';
-      });
-    }).catchError((error) {
-      print('Error fetching train data: $error');
+    currentRegion = 'Shinjuku';
+    DurationVariable = 2;
+    if(isButton3Pressed == true){
+  isButton3Pressed = false;
+}
+
+    
+    
+    
+      buttonColor2 = ListTileColor;
+      buttonColor3 = const Color.fromARGB(148, 231, 231, 231);
+      try {
+    final data = await fetchTrainData(line);
+    setState(() {
+      trainData = data;
     });
-    print('Button S clicked');
-  }
-}
-
-class MyList extends StatelessWidget {
-  final List<Map<String, dynamic>>? trainData;
-
-  const MyList({Key? key, required this.trainData}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    if (trainData == null) {
-      return Center(child: CircularProgressIndicator());
-    } else {
-      return ListView.builder(
-        itemCount: trainData!.length,
-        itemBuilder: (context, index) {
-          final train = trainData![index];
-          return TrainInfoCard(
-            toStation: train['odpt:toStation'] ?? 'Please wait',
-            destinationStation: train['odpt:fromStation'] ?? '',
-            trainNumber: train['odpt:trainNumber'] ?? '',
-          );
-        },
-      );
+  } catch (error) {
+    print('Error fetching train data: $error');
+  
     }
-  }
-}
+  });
+
+  
+
+  print('Button S clicked');
+}}
+
+
 
 class HoverableIconButton extends StatefulWidget {
   final String imagePath;
@@ -290,63 +387,3 @@ class _HoverableIconButtonState extends State<HoverableIconButton> {
 }
 
 
-class TrainInfoCard extends StatelessWidget {
-  
-  final String toStation;
-  final dynamic destinationStation; // Adjusted type to dynamic
-  final String trainNumber;
-
-  const TrainInfoCard({
-    Key? key,
-   
-    required this.destinationStation,
-    required this.trainNumber,
-    required this.toStation,
-  }) : super(key: key);
-
- String formatStationName(String stationName) {
-  return stationName.replaceAllMapped(RegExp(r'(?<=[a-z])([A-Z])'), (match) {
-    return '-' + match.group(0)!;
-  });
-}
-String extractStationName(dynamic station) {
-  if (station != null) {
-    if (station is String) {
-      final parts = formatStationName(station).split('.');
-      return parts.isNotEmpty ? parts.last : '';
-    } else if (station is List<String> && station.isNotEmpty) {
-      final parts = formatStationName(station.last).split('.');
-      return parts.isNotEmpty ? parts.last : '';
-    }
-  }
-  return '';
-}
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent, // Set the color to transparent
-      child: Card(
-        margin: EdgeInsets.all(8.0),
-        color: Colors.transparent, // Set the color to transparent
-        elevation: 0, // Remove shadow
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
-          child: ListTile(
-            tileColor: ListTileColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            title: Text('Train Number: $trainNumber'),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('To Station: ${extractStationName(toStation)}'),
-                Text('Destination Station: ${extractStationName(destinationStation)}'),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
