@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -8,15 +10,22 @@ import 'package:japanmetroline/alltrains.dart';
 import 'package:japanmetroline/stationinfo.dart';
 import 'package:text_scroll/text_scroll.dart';
 
+
 int DurationVariable = 0;
+int uselessFlag = 0;
+dynamic Camera = CameraPosition(target: LatLng(35.6895, 139.6917), zoom: 12);
 Color ListTileColor = Color(0xffb0bf1e);
 String line = 'Shinjuku';
+  final Key  keyTextScroll = const ObjectKey(1);
+dynamic physics = AlwaysScrollableScrollPhysics();
+bool value1 = false;
+bool switchvalue1 = false;
 int buttonFlag = 1;
 String currentRegion = 'Shinjuku';
 dynamic buttonColor3 = ListTileColor;
 int buttonTrigger = 0;
 dynamic buttonColor2 = const Color.fromARGB(148, 231, 231, 231);
-
+final Map<String, Marker> _markers = {};
 Future<Map<String, dynamic>> fetchTrainInformationText(String line) async {
   final response = await http.get(Uri.parse('https://api-public.odpt.org/api/v4/odpt:TrainInformation?odpt:railway=odpt.Railway:Toei.$line&odpt:operator=odpt.Operator:Toei'));
 
@@ -79,17 +88,62 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
+
+  _generateMarkers() async {
+
+  for (int i = 0; i < data.length; i++) {
+   BitmapDescriptor markerIcon = await BitmapDescriptor.fromAssetImage(ImageConfiguration(
+
+
+   ),
+   data[i]['assetPath']
+   
+   
+   
+   );
+
+  _markers[i.toString()] = Marker( markerId: MarkerId(i.toString()), position: data[i]['position'], icon: markerIcon,infoWindow: InfoWindow(title: data[i]['title'], snippet: 'Toei Shinjuku Line'));
+    setState((){});
+   
+  }
+}
   String currentAssetImage = 'lib/assets/C.png';
 
+ LatLng? selectedCoordinates;
+
+  void filterSearchResults(String query) {
+    final matchedItem = data.firstWhere(
+      (item) => item['title'].toString().toLowerCase() == query.toLowerCase(),
+      orElse: () => {},
+    );
+
+    setState(() {
+      if (matchedItem.isNotEmpty) {
+        selectedCoordinates = matchedItem['position'];
+        Camera = CameraPosition(target: selectedCoordinates!, zoom: 15);
+         _mapKey.currentState?.setState(() {
+          _controller?.animateCamera(CameraUpdate.newCameraPosition(Camera));
+         });
+      } else {
+        selectedCoordinates = null;
+      }
+      print(selectedCoordinates);
+    });
+  }
   // Define trainData variable here
   List<Map<String, dynamic>>? trainData = [];
   List<Map<String, dynamic>>? trainInfo = [];
+  List<dynamic> stationNames = data.map((station) => station['title']).toList();
   bool isButton3Pressed = true;
   Future<Map<String, dynamic>>? trainInfoFuture;
-
+  int keyValue = 1;
+  GoogleMapController? _controller;
+final GlobalKey _mapKey = GlobalKey();
   @override
   void initState() {
+    _generateMarkers();
     super.initState();
+    _loadMapStyle();
     // Fetch train data when widget is initialized
     fetchTrainData(line).then((data) {
       setState(() {
@@ -101,10 +155,20 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // Fetch train information text
     trainInfoFuture = fetchTrainInformationText(line);
-  }
 
+    
+  }
+    Future<void> _loadMapStyle() async {
+    String style = await rootBundle.loadString('lib/assets/map_style.json');
+    _controller?.setMapStyle(style);
+  }
+dynamic? selectedStation;
+List<dynamic> _filterStationNames(dynamic query) {
+    return stationNames.where((station) => station.toLowerCase().contains(query.toLowerCase())).toList();
+  }
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -124,146 +188,276 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       body: SingleChildScrollView(
-        child: Stack(
-          children: [
-            Container(
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(
-                      'lib/assets/1200px-Fukutoshin_Line_Shibuya_Station_002 (1).jpg'),
-                  fit: BoxFit.cover,
+        physics: physics,
+        
+          child: Stack(
+            children: [
+              Container(
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage(
+                        'lib/assets/1200px-Fukutoshin_Line_Shibuya_Station_002 (1).jpg'),
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.only(top:120.0,left: 16,right:16),
-                  child: SizedBox(
-                    height: 1200,
-                    width: 1200,
-                    child: Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.all(22.0),
-                          child: Text(
-                            '${_getCurrentTime()}',
-                            style: GoogleFonts.exo2(color: Colors.white),
-                            textScaleFactor: 4,
-                          ),
-                        ),
-                        Text(
-                          '$currentRegion',
-                          style: GoogleFonts.exo2(color: ListTileColor),
-                          textScaleFactor: 4,
-                        ).animate().slideX(
-                            begin: -0.2,
-                            duration: Duration(milliseconds: 500 + DurationVariable)).fadeIn(
-                            duration: Duration(milliseconds: 500)),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: ElevatedButton(
-                                style: ButtonStyle(
-                                  minimumSize: MaterialStateProperty.all(Size(200, 50)),
-                                  backgroundColor: MaterialStateProperty.all(buttonColor3),
-                                  shape: MaterialStateProperty.all(
-                                    RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.only(
-                                          topLeft: Radius.circular(10),
-                                          topRight: Radius.circular(10)),
-                                    ),
-                                  ),
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    buttonColor3 = ListTileColor;
-                                    buttonColor2 = Color.fromARGB(148, 231, 231, (231 + buttonTrigger));
-                                    buttonFlag = 1;
-                                    isButton3Pressed = true;
-                                  });
-                                },
-                                child: Text("Station Info",style: TextStyle(color: Colors.white)),
-                              ),
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top:120.0,left: 16,right:16),
+                    child: SizedBox(
+                      height: 1800,
+                      width: 1200,
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.all(22.0),
+                            child: Text(
+                              '${_getCurrentTime()}',
+                              style: GoogleFonts.exo2(color: Colors.white),
+                              textScaleFactor: 4,
                             ),
-                            // Add some spacing between buttons
-                            Expanded(
-                              child: ElevatedButton(
-                                style: ButtonStyle(
-                                  minimumSize: MaterialStateProperty.all(Size(200, 50)),
-                                  backgroundColor: MaterialStateProperty.all(buttonColor2),
-                                  shape: MaterialStateProperty.all(
-                                    RoundedRectangleBorder(
+                          ),
+                          Text(
+                            '$currentRegion',
+                            style: GoogleFonts.exo2(color: ListTileColor),
+                            textScaleFactor: 4,
+                          ).animate().slideX(
+                              begin: -0.2,
+                              duration: Duration(milliseconds: 500 + DurationVariable)).fadeIn(
+                              duration: Duration(milliseconds: 500)),
+                          Row(
+                            children: [
+                              
+                              Expanded(
+                                child: ElevatedButton(
+                                  style: ButtonStyle(
+                                    minimumSize: MaterialStateProperty.all(Size(200, 50)),
+                                    backgroundColor: MaterialStateProperty.all(buttonColor3),
+                                    shape: MaterialStateProperty.all(
+                                      RoundedRectangleBorder(
                                         borderRadius: BorderRadius.only(
                                             topLeft: Radius.circular(10),
-                                            topRight: Radius.circular(10))
+                                            topRight: Radius.circular(10)),
+                                      ),
                                     ),
                                   ),
+                                  onPressed: () {
+                                    setState(() {
+                                      buttonColor3 = ListTileColor;
+                                      buttonColor2 = Color.fromARGB(148, 231, 231, (231 + buttonTrigger));
+                                      buttonFlag = 1;
+                                      isButton3Pressed = true;
+                                    });
+                                  },
+                                  child: Text("Station Info",style: TextStyle(color: Colors.white)),
                                 ),
-                                onPressed: () {
-                                  setState(() {
-                                    buttonColor2 = ListTileColor;
-                                    buttonColor3 = const Color.fromARGB(148, 231, 231, 231);
-                                    buttonFlag = 0;
-                                    isButton3Pressed = false;
-                                  });
-                                },
-                                child: Text("All Trains",style: TextStyle(color: Colors.white)),
+                              ),
+                              // Add some spacing between buttons
+                              Expanded(
+                                child: ElevatedButton(
+                                  style: ButtonStyle(
+                                    minimumSize: MaterialStateProperty.all(Size(200, 50)),
+                                    backgroundColor: MaterialStateProperty.all(buttonColor2),
+                                    shape: MaterialStateProperty.all(
+                                      RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.only(
+                                              topLeft: Radius.circular(10),
+                                              topRight: Radius.circular(10))
+                                      ),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    setState(() {
+                                      buttonColor2 = ListTileColor;
+                                      buttonColor3 = const Color.fromARGB(148, 231, 231, 231);
+                                      buttonFlag = 0;
+                                      isButton3Pressed = false;
+                                    });
+                                  },
+                                  child: Text("All Trains",style: TextStyle(color: Colors.white)),
+                                ),
+                              ),
+                            ],
+                          ),
+                          ClipRRect(
+                            borderRadius: BorderRadius.only(bottomRight: Radius.circular(10), bottomLeft: Radius.circular(10)),
+                            child: Container(
+                              height: 1500,
+                              width: 1200,
+                              color: const Color.fromARGB(148, 231, 231, 231),
+                              child: !isButton3Pressed
+                                  ? MyList(trainData: trainData)
+                                  : Column(
+                                children: [
+          
+                                SizedBox(
+                                  height: 400,
+                                  child: Expanded(child: Padding(
+                                            
+                                    padding: EdgeInsets.all(24),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(24),
+                                     
+                                      child: MouseRegion(
+                                       onHover:  (event) {
+                                            
+                                       
+                                       },
+                                       onExit: ( event) {
+                                       
+                                       },
+                                        child: 
+                                        GoogleMap(
+                                         key: _mapKey,
+                                          onMapCreated: (GoogleMapController controller) {
+                                            _controller = controller;
+                                            _loadMapStyle();
+                                          },
+                                          zoomGesturesEnabled: false,
+                                          webGestureHandling: WebGestureHandling.cooperative,
+                                          trafficEnabled: switchvalue1,
+                                           initialCameraPosition: Camera,markers: _markers.values.toSet()),
+                                      ),
+                                    ),
+                                  )),
+                                ),Row(
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal:32.0,vertical: 8),
+                                                          child: SizedBox(child: Autocomplete<String>(
+                                        optionsBuilder: (TextEditingValue textEditingValue) {
+                                          // Filter station names based on user input
+                                          return Future<Iterable<String>>.value(_filterStationNames(textEditingValue.text).map<String>((dynamic value) => value.toString()));
+                                        },
+                                        onSelected: (String value) {
+                                          setState(() {
+                                            selectedStation = value;
+                                          });
+                                        },
+                                        fieldViewBuilder: (BuildContext context, TextEditingController textEditingController, FocusNode focusNode, VoidCallback onFieldSubmitted) {
+                                          return TextField(
+                                            controller: textEditingController,
+                                            focusNode: focusNode,
+                                            onSubmitted: (String value) {
+                                              filterSearchResults(value);
+                                              onFieldSubmitted(
+
+
+                                              );
+                                              
+                                            },
+                                            decoration: InputDecoration(
+                                              prefixIcon: Icon(Icons.search, color: Colors.black),
+                                              hintText: 'Search Station',
+                                              hintStyle: TextStyle(color: Colors.black),
+                                              border: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                                borderSide: BorderSide(color: Colors.black),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(12),
+                                                borderSide: BorderSide(color: Colors.black),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                        optionsViewBuilder: (BuildContext context, AutocompleteOnSelected<String> onSelected, Iterable<String> options) {
+                                          return Align(
+                                            alignment: Alignment.topLeft,
+                                            child: Material(
+                                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                              elevation: 4.0,
+                                              child: Container(
+                                                color: ListTileColor,
+                                                height: 200,
+                                                width: 600,
+                                                child: ListView(
+                                                  padding: EdgeInsets.zero,
+                                                  children: options.map<Widget>((String option) {
+                                                    return ListTile(
+                                                      title: Text(option),
+                                                      onTap: () {
+                                                        onSelected(option);
+                                                      },
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                  height: 100,
+                  width: 600,
+                
+            ),
+                                    ),
+                                    Column(children: [
+                                      ClipRRect(borderRadius: BorderRadius.circular(12),child:
+                                      Container(
+                                        color: Color.fromARGB(164, 255, 255, 255),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: Text( 'Show Traffic',style: TextStyle(color: ListTileColor,fontSize: 24),),
+                                        ),),),
+                                                                   Switch(
+                                    activeColor: ListTileColor,
+                                        value: switchvalue1,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            switchvalue1 = value;
+                                          });
+                                        },
+                                      ),]),
+                                  ],
+                                ),
+                                  FutureBuilder<Map<String, dynamic>>(
+                                    future: trainInfoFuture,
+                                    builder: (context, snapshot) {
+                                      if (snapshot.connectionState == ConnectionState.waiting) {
+                                        return Center(child: CircularProgressIndicator());
+                                      } else if (snapshot.hasError) {
+                                        return Center(child: Text('Error: ${snapshot.error}'));
+                                      } else if (snapshot.hasData) {
+                                        final trainInfoText = snapshot.data!['odpt:trainInformationText']['ja'] ?? 'No information available';
+                                        return Padding(
+                                          padding: const EdgeInsets.all(8.0),
+                                          child: ClipRRect(borderRadius: BorderRadius.circular(12),child:Container(
+                                            color: Color.fromARGB(146, 104, 104, 104),
+                                            child: AnimatedContainer(
+                                              duration: Duration(seconds: 1),
+                                              child: TextScroll(
+                                                key: keyTextScroll,
+                                                "$trainInfoText                                ",
+                                                style: TextStyle(color: ListTileColor, fontSize: 48),
+                                              ),
+                                            ),
+                                            
+                                          ),
+                                        ));
+                                      } else {
+                                       
+          
+                                        return Center(child: Text('No information available'));
+                                      }
+                                    },
+                                  ),
+                                   Divider(color: ListTileColor,thickness: 2,indent: 20,endIndent: 20,),
+                                  TrainInfoList(trainInfo: trainInfo),
+                                 
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                        ClipRRect(
-                          borderRadius: BorderRadius.only(bottomRight: Radius.circular(10), bottomLeft: Radius.circular(10)),
-                          child: Container(
-                            height: 800,
-                            width: 1200,
-                            color: const Color.fromARGB(148, 231, 231, 231),
-                            child: !isButton3Pressed
-                                ? MyList(trainData: trainData)
-                                : Column(
-                              children: [
-                                FutureBuilder<Map<String, dynamic>>(
-                                  future: trainInfoFuture,
-                                  builder: (context, snapshot) {
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return Center(child: CircularProgressIndicator());
-                                    } else if (snapshot.hasError) {
-                                      return Center(child: Text('Error: ${snapshot.error}'));
-                                    } else if (snapshot.hasData) {
-                                      final trainInfoText = snapshot.data!['odpt:trainInformationText']['ja'] ?? 'No information available';
-                                      return Padding(
-                                        padding: const EdgeInsets.all(8.0),
-                                        child: ClipRRect(borderRadius: BorderRadius.circular(12),child:Container(
-                                          color: Color.fromARGB(146, 104, 104, 104),
-                                          child: TextScroll(
-                                            "$trainInfoText                                ",
-                                            style: TextStyle(color: ListTileColor, fontSize: 48),
-                                          ),
-                                          
-                                        ),
-                                      ));
-                                    } else {
-                                     
-
-                                      return Center(child: Text('No information available'));
-                                    }
-                                  },
-                                ),
-                                 Divider(color: ListTileColor,thickness: 2,indent: 20,endIndent: 20,),
-                                TrainInfoList(trainInfo: trainInfo),
-                               
-                              ],
-                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
+      
     );
   }
 
@@ -419,3 +613,128 @@ class _HoverableIconButtonState extends State<HoverableIconButton> {
     );
   }
 }
+
+List<Map<String, dynamic>> data = [
+  {
+    'id': '1',
+    'title': 'Shinjuku',
+    'position': const LatLng(35.6896021,139.7004839), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '2',
+    'title': 'Shinjuku-sanchome',
+    'position': const LatLng(35.6908636,139.7047682), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '3',
+    'title': 'Akebonobashi',
+    'position': const LatLng(35.6923429,139.7225317), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '4',
+    'title': 'Ichigaya',
+    'position': const LatLng(35.6910045,139.735467), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '5',
+    'title': 'Kudanshita',
+    'position': const LatLng(35.6954587,139.7510729), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '6',
+    'title': 'Jinbocho',
+    'position': const LatLng(35.6959019,139.7575118), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '7',
+    'title': 'Ogawamachi',
+    'position': const LatLng(35.6951586,139.7667557), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '8',
+    'title': 'Iwamotocho',
+    'position': const LatLng(35.6955489,139.7750715), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '9',
+    'title': 'Hamacho',
+    'position': const LatLng(35.6884112,139.7876368), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '10',
+    'title': 'Morishita',
+    'position': const LatLng(35.6880153,139.7975693), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '11',
+    'title': 'Kikukawa',
+    'position': const LatLng(35.6883655,139.8059956), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '12',
+    'title': 'Sumiyoshi',
+    'position': const LatLng(35.6889909,139.8157427), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '13',
+    'title': 'Nishi-Ojima',
+    'position': const LatLng(35.6893517,139.8262506), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '14',
+    'title': 'Ojima',
+    'position': const LatLng(35.6897503,139.8346515), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '15',
+    'title': 'Higashi-Ojima',
+    'position': const LatLng(35.6898852,139.8474303), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '16',
+    'title': 'Funabori',
+    'position': const LatLng(35.6838116,139.8640594), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '17',
+    'title': 'Ichinoe',
+    'position': const LatLng(35.685903,139.882367), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '18',
+    'title': 'Mizue',
+    'position': const LatLng(35.6932817,139.8976135), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '19',
+    'title': 'Shinozaki',
+    'position': const LatLng(35.705976,139.9038004), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+  {
+    'id': '20',
+    'title': 'Motoyawata',
+    'position': const LatLng(35.7209044,139.9272774), // Placeholder coordinates
+    'assetPath': 'lib/assets/s2.png',
+  },
+];
+
+

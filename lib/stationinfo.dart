@@ -12,7 +12,7 @@ late Future<List<Map<String, dynamic>>> trainDataFuture;
 class TrainInfoList extends StatefulWidget {
   final List<Map<String, dynamic>>? trainInfo;
 
-  const TrainInfoList({Key? key, required this.trainInfo}) : super(key: key);
+  const TrainInfoList({Key? key, required this.trainInfo,stationName,stationCode}) : super(key: key);
 
   @override
   TrainInfoListState createState() => TrainInfoListState();
