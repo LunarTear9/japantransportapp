@@ -3,13 +3,14 @@ const MANIFEST = 'flutter-app-manifest';
 const TEMP = 'flutter-temp-cache';
 const CACHE_NAME = 'flutter-app-cache';
 
-const RESOURCES = {"assets/AssetManifest.bin": "e794fe2162b46bbdf399765e04ee8943",
-"assets/AssetManifest.bin.json": "94a78eeb280ecfb0e49a5ffdb6fe86cb",
-"assets/AssetManifest.json": "cce1147961d2ac5203d9be4af65bb59e",
+const RESOURCES = {"assets/AssetManifest.bin": "94e5f1a496db2e1f8d7897efeb4ee91e",
+"assets/AssetManifest.bin.json": "57356b78aa58af3fa16638fdde1f09bf",
+"assets/AssetManifest.json": "143cb3962f3e41a15ede9a351fa5a059",
 "assets/FontManifest.json": "dc3d03800ccca4601324923c0b1d6d57",
 "assets/fonts/MaterialIcons-Regular.otf": "61473681283cddbc2d84149bdc6deb15",
 "assets/lib/assets/1200px-Fukutoshin_Line_Shibuya_Station_002%2520(1).jpg": "5e1956618326004fd8893447c9b35971",
 "assets/lib/assets/A.png": "ab0acccace64d14763cbf3423b0ce13a",
+"assets/lib/assets/A2.png": "aac6fa925a4a934c91047dc661a82976",
 "assets/lib/assets/C-Off.png": "ff26c719004a776c80ef811e2d19d564",
 "assets/lib/assets/C.png": "b5d3026a9e6c7b5d6f62c6caf433892b",
 "assets/lib/assets/E.png": "9121e0752dc4d724d874de57bd37f218",
@@ -51,9 +52,9 @@ const RESOURCES = {"assets/AssetManifest.bin": "e794fe2162b46bbdf399765e04ee8943
 "icons/Icon-512.png": "96e752610906ba2a93c65f8abe1645f1",
 "icons/Icon-maskable-192.png": "c457ef57daa1d16f64b27b786ec2ea3c",
 "icons/Icon-maskable-512.png": "301a7604d45b3e739efc881eb04896ea",
-"index.html": "6ec28ace66ee86e5aea457ef8a53ab1e",
-"/": "6ec28ace66ee86e5aea457ef8a53ab1e",
-"main.dart.js": "7c84498e9571c92b7b1a246f96ff8533",
+"index.html": "c94ef9d28f08421e08932814de3838ad",
+"/": "c94ef9d28f08421e08932814de3838ad",
+"main.dart.js": "454a6b38104a3a8e55d1c1358e8bf0f3",
 "manifest.json": "b72134679e75754c4fb4bd18189194a3",
 "version.json": "cf83f9c9bfebfe31eeb07d42a77e85b4"};
 // The application shell files that are downloaded before a service worker can
