@@ -291,7 +291,7 @@ List<dynamic> _filterStationNames(dynamic query) {
           
                                 SizedBox(
                                   height: 400,
-                                  child: Expanded(child: Padding(
+                                  child:  Padding(
                                             
                                     padding: EdgeInsets.all(24),
                                     child: ClipRRect(
@@ -318,7 +318,7 @@ List<dynamic> _filterStationNames(dynamic query) {
                                            initialCameraPosition: Camera,markers: _markers.values.toSet()),
                                       ),
                                     ),
-                                  )),
+                                  ),
                                 ),Row(
                                   children: [
                                     Padding(
