@@ -12,7 +12,7 @@ import 'package:text_scroll/text_scroll.dart';
 
 
 int DurationVariable = 0;
-dynamic pinData = data;
+List<Map<String, dynamic>> Pindata = Shinjukudata;
 int uselessFlag = 0;
 dynamic Camera = CameraPosition(target: LatLng(35.6895, 139.6917), zoom: 12);
 Color ListTileColor = Color(0xffb0bf1e);
@@ -95,18 +95,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _generateMarkers() async {
 
-  for (int i = 0; i < pinData.length; i++) {
+  for (int i = 0; i < Pindata.length; i++) {
    BitmapDescriptor markerIcon = await BitmapDescriptor.fromAssetImage(ImageConfiguration(
 
 
    ),
-   pinData[i]['assetPath']
+   Pindata[i]['assetPath']
    
    
    
    );
 
-  _markers[i.toString()] = Marker( markerId: MarkerId(i.toString()), position: pinData[i]['position'], icon: markerIcon,infoWindow: InfoWindow(title: pinData[i]['title'], snippet: 'Toei Shinjuku Line'));
+  _markers[i.toString()] = Marker( markerId: MarkerId(i.toString()), position: Pindata[i]['position'], icon: markerIcon,infoWindow: InfoWindow(title: Pindata[i]['title'], snippet: 'Toei Shinjuku Line'));
     setState((){});
    
   }
@@ -116,12 +116,13 @@ class _MyHomePageState extends State<MyHomePage> {
  LatLng? selectedCoordinates;
 
   void filterSearchResults(String query) {
-    final matchedItem = pinData.firstWhere(
+    setState(() {
+    final matchedItem = Pindata.firstWhere(
       (item) => item['title'].toString().toLowerCase() == query.toLowerCase(),
       orElse: () => {},
     );
 
-    setState(() {
+    
       if (matchedItem.isNotEmpty) {
         selectedCoordinates = matchedItem['position'];
         Camera = CameraPosition(target: selectedCoordinates!, zoom: 15);
@@ -137,7 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // Define trainData variable here
   List<Map<String, dynamic>>? trainData = [];
   List<Map<String, dynamic>>? trainInfo = [];
-  List<dynamic> stationNames = pinData.map((station) => station['title']).toList();
+  List<dynamic> stationNames = Pindata.map((station) => station['title']).toList();
   bool isButton3Pressed = true;
   Future<Map<String, dynamic>>? trainInfoFuture;
   int keyValue = 1;
@@ -486,8 +487,11 @@ List<dynamic> _filterStationNames(dynamic query) {
       ListTileColor = const Color(0xffec6e65);
       line = 'Asakusa';
       Stations = dataAsakusa;
-      pinData = dataAsakusa;
+      Pindata = dataAsakusa;
+      
       currentRegion = 'Asakusa';
+
+      stationNames = Pindata.map((station) => station['title']).toList();
       DurationVariable = 1;
       _generateMarkers();
       buttonTrigger = 0;
@@ -546,8 +550,9 @@ List<dynamic> _filterStationNames(dynamic query) {
       ListTileColor = const Color(0xffb0bf1e);
       line = 'Shinjuku';
       Stations = ShinjukuStations;
-      pinData = data;
+      Pindata = Shinjukudata;
       _generateMarkers();
+      stationNames = Pindata.map((station) => station['title']).toList();
       currentRegion = 'Shinjuku';
       DurationVariable = 2;
       if (isButton3Pressed == true) {
@@ -625,7 +630,7 @@ class _HoverableIconButtonState extends State<HoverableIconButton> {
   }
 }
 
-List<Map<String, dynamic>> data = [
+List<Map<String, dynamic>> Shinjukudata = [
   {
     'id': '1',
     'title': 'Shinjuku',
