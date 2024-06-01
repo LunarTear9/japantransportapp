@@ -12,6 +12,7 @@ import 'package:text_scroll/text_scroll.dart';
 
 
 int DurationVariable = 0;
+dynamic pinData = data;
 int uselessFlag = 0;
 dynamic Camera = CameraPosition(target: LatLng(35.6895, 139.6917), zoom: 12);
 Color ListTileColor = Color(0xffb0bf1e);
@@ -24,6 +25,7 @@ int buttonFlag = 1;
 String currentRegion = 'Shinjuku';
 dynamic buttonColor3 = ListTileColor;
 int buttonTrigger = 0;
+List<Map<String, dynamic>> Stations = ShinjukuStations;
 dynamic buttonColor2 = const Color.fromARGB(148, 231, 231, 231);
 final Map<String, Marker> _markers = {};
 Future<Map<String, dynamic>> fetchTrainInformationText(String line) async {
@@ -91,18 +93,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _generateMarkers() async {
 
-  for (int i = 0; i < data.length; i++) {
+  for (int i = 0; i < pinData.length; i++) {
    BitmapDescriptor markerIcon = await BitmapDescriptor.fromAssetImage(ImageConfiguration(
 
 
    ),
-   data[i]['assetPath']
+   pinData[i]['assetPath']
    
    
    
    );
 
-  _markers[i.toString()] = Marker( markerId: MarkerId(i.toString()), position: data[i]['position'], icon: markerIcon,infoWindow: InfoWindow(title: data[i]['title'], snippet: 'Toei Shinjuku Line'));
+  _markers[i.toString()] = Marker( markerId: MarkerId(i.toString()), position: pinData[i]['position'], icon: markerIcon,infoWindow: InfoWindow(title: pinData[i]['title'], snippet: 'Toei Shinjuku Line'));
     setState((){});
    
   }
@@ -112,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> {
  LatLng? selectedCoordinates;
 
   void filterSearchResults(String query) {
-    final matchedItem = data.firstWhere(
+    final matchedItem = pinData.firstWhere(
       (item) => item['title'].toString().toLowerCase() == query.toLowerCase(),
       orElse: () => {},
     );
@@ -133,7 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
   // Define trainData variable here
   List<Map<String, dynamic>>? trainData = [];
   List<Map<String, dynamic>>? trainInfo = [];
-  List<dynamic> stationNames = data.map((station) => station['title']).toList();
+  List<dynamic> stationNames = pinData.map((station) => station['title']).toList();
   bool isButton3Pressed = true;
   Future<Map<String, dynamic>>? trainInfoFuture;
   int keyValue = 1;
@@ -481,8 +483,11 @@ List<dynamic> _filterStationNames(dynamic query) {
     setState(() async {
       ListTileColor = const Color(0xffec6e65);
       line = 'Asakusa';
+      Stations = dataAsakusa;
+      pinData = dataAsakusa;
       currentRegion = 'Asakusa';
       DurationVariable = 1;
+      _generateMarkers();
       buttonTrigger = 0;
       if (isButton3Pressed == true) {
         isButton3Pressed = false;
@@ -511,6 +516,7 @@ List<dynamic> _filterStationNames(dynamic query) {
       line = 'Oedo';
       currentRegion = 'Oedo';
       DurationVariable = 0;
+      _generateMarkers();
       buttonTrigger = 1;
       if (isButton3Pressed == true) {
         isButton3Pressed = false;
@@ -537,6 +543,9 @@ List<dynamic> _filterStationNames(dynamic query) {
     setState(() async {
       ListTileColor = const Color(0xffb0bf1e);
       line = 'Shinjuku';
+      Stations = ShinjukuStations;
+      pinData = data;
+      _generateMarkers();
       currentRegion = 'Shinjuku';
       DurationVariable = 2;
       if (isButton3Pressed == true) {
@@ -738,3 +747,125 @@ List<Map<String, dynamic>> data = [
 ];
 
 
+List<Map<String, dynamic>> dataAsakusa = [
+  {
+    'id': '1',
+    'title': 'Nishi-Magome',
+    'position': const LatLng(35.5868063,139.705787), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '2',
+    'title': 'Magome',
+    'position': const LatLng(35.5963742,139.7117779), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '3',
+    'title': 'Nakanobu',
+    'position': const LatLng(35.6057769,139.7126001), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '4',
+    'title': 'Togoshi',
+    'position': const LatLng(35.6144648,139.716284), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '5',
+    'title': 'Gotanda',
+    'position': const LatLng(35.6262851,139.7234455), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '6',
+    'title': 'Takawanawadai',
+    'position': const LatLng(35.6317899,139.7304399), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '7',
+    'title': 'Sengakuji',
+    'position': const LatLng(35.6386228,139.7398764), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '8',
+    'title': 'Mita',
+    'position': const LatLng(35.6476645,139.7460769), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '9',
+    'title': 'Daimon',
+    'position': const LatLng(35.6567195,139.75547), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '10',
+    'title': 'Shinbashi',
+    'position': const LatLng(35.666371,139.7582187), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '11',
+    'title': 'Higashi-Ginza',
+    'position': const LatLng(35.6697046,139.7645596), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '12',
+    'title': 'Takaracho',
+    'position': const LatLng(35.675472,139.7718032), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '13',
+    'title': 'Nihombashi',
+    'position': const LatLng(35.6820973,139.7746189), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '14',
+    'title': 'Ningyocho',
+    'position': const LatLng(35.6863497,139.7822313,), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '15',
+    'title': 'Higashi-Nihombashi',
+    'position': const LatLng(35.6921504,139.7847954), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '16',
+    'title': 'Asakusabashi',
+    'position': const LatLng( 35.6974588,139.7859034),// Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '17',
+    'title': 'Kuramae',
+    'position': const LatLng(35.7031149,139.790577), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '18',
+    'title': 'Asakusa',
+    'position': const LatLng(35.7107633,139.7976384), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '19',
+    'title': 'Honjo-Azumabashi',
+    'position': const LatLng(35.7085714,139.8044621), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+  {
+    'id': '20',
+    'title': 'Oshiage',
+    'position': const LatLng(35.7103115,139.8130936), // Placeholder coordinates
+    'assetPath': 'lib/assets/A2.png',
+  },
+];
