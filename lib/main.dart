@@ -30,7 +30,7 @@ dynamic buttonColor2 = const Color.fromARGB(148, 231, 231, 231);
 final Map<String, Marker> _markers = {};
 Future<Map<String, dynamic>> fetchTrainInformationText(String line) async {
   final response = await http.get(Uri.parse('https://api-public.odpt.org/api/v4/odpt:TrainInformation?odpt:railway=odpt.Railway:Toei.$line&odpt:operator=odpt.Operator:Toei'));
-
+print('https://api-public.odpt.org/api/v4/odpt:TrainInformation?odpt:railway=odpt.Railway:Toei.$line&odpt:operator=odpt.Operator:Toei');
   if (response.statusCode == 200) {
     final List<dynamic> responseData = json.decode(response.body);
     if (responseData.isNotEmpty) {
@@ -47,6 +47,7 @@ Future<List<Map<String, dynamic>>> fetchTrainInformation(Line) async {
   final response = await http.get(
       Uri.parse('https://api-public.odpt.org/api/v4/odpt:Station?odpt:railway=odpt.Railway:Toei.$Line&odpt:operator=odpt.Operator:Toei')); // Replace with your API endpoint
   print('apicall');
+  print('https://api-public.odpt.org/api/v4/odpt:Station?odpt:railway=odpt.Railway:Toei.$Line&odpt:operator=odpt.Operator:Toei');
   if (response.statusCode == 200) {
     final List<dynamic> responseData = json.decode(response.body);
     return responseData.map((data) => data as Map<String, dynamic>).toList();
@@ -57,6 +58,7 @@ Future<List<Map<String, dynamic>>> fetchTrainInformation(Line) async {
 
 Future<List<Map<String, dynamic>>> fetchTrainData(Line) async {
   final response = await http.get(Uri.parse('https://api-public.odpt.org/api/v4/odpt:Train?odpt:railway=odpt.Railway:Toei.$Line&odpt:operator=odpt.Operator:Toei'));
+  print('https://api-public.odpt.org/api/v4/odpt:Train?odpt:railway=odpt.Railway:Toei.$Line&odpt:operator=odpt.Operator:Toei');
 
   print('apicall');
   if (response.statusCode == 200) {
