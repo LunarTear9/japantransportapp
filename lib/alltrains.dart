@@ -29,6 +29,7 @@ class MyList extends StatelessWidget {
                   trainNumber: train['odpt:trainNumber'] ?? '',
                   raildirection: train['odpt:railDirection'] ?? '',
                   trainType: train['odpt:trainType'] ?? '',
+                  delay: train['odpt:delay'] ?? '',
                 );
               },
               childCount: trainData!.length,
@@ -47,6 +48,7 @@ class TrainInfoCard extends StatefulWidget {
   final dynamic lastStation; // Adjusted type to dynamic
   final String trainNumber;
   final String trainType;
+  final int delay;
 
   const TrainInfoCard({
     Key? key,
@@ -55,6 +57,7 @@ class TrainInfoCard extends StatefulWidget {
     required this.toStation,
     required this.raildirection,
     required this.trainType,
+    required this.delay,
   }) : super(key: key);
 
   @override
@@ -80,6 +83,38 @@ class _TrainInfoCardState extends State<TrainInfoCard> {
     }
     return '';
   }
+Widget getDelay(int delay) {
+
+
+  if (delay == 0) {
+    return Text('On Time', style: TextStyle(color: Colors.white));
+  } else if (delay > 0) {
+    return Text('Delayed by $delay Seconds', style: TextStyle(color: Colors.red));
+  } else {
+    return Text('Early by ${delay.abs()} Seconds', style: TextStyle(color: Colors.white));
+  }
+}
+
+double getSizedBox(delay){
+
+ if(delay==0){
+   return  70;
+ }
+   else if (delay > 0){
+     return 150;
+
+     
+   
+
+
+}
+
+else {
+
+  return 32;
+}
+
+}
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +135,7 @@ class _TrainInfoCardState extends State<TrainInfoCard> {
             });
             
                 },
-                trailing: Icon(Icons.arrow_forward_ios, color: Colors.white),
+                trailing: SizedBox(width: getSizedBox(widget.delay),child: Row(children: [Padding(padding: EdgeInsets.only(right:14),child:getDelay(widget.delay)),isExpanded2? Icon(Icons.arrow_downward, color: Colors.white):Icon(Icons.arrow_forward_ios, color: Colors.white)],)),
                 tileColor: ListTileColor, // Use appropriate color variable
                 shape: RoundedRectangleBorder(
                   borderRadius: !isExpanded2 ? BorderRadius.circular(12) : BorderRadius.only(
@@ -108,6 +143,8 @@ class _TrainInfoCardState extends State<TrainInfoCard> {
                     topRight: Radius.circular(12),
                   )
                 ),
+               
+                
                 title: Text('Train Number: ${widget.trainNumber}', style: TextStyle(color: Colors.white)),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

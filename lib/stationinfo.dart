@@ -168,7 +168,7 @@ class _TrainInfoCardState extends State<TrainInfoCard> {
 }
 Future<List<String>> fetchDepartureTimes(Line, stationName) async {
   final response = await http.get(Uri.parse("https://api-public.odpt.org/api/v4/odpt:StationTimetable?odpt:railway=odpt.Railway:Toei.$Line&odpt:station=odpt.Station:Toei.$Line.$stationName&odpt:operator=odpt.Operator:Toei")); 
-
+print(Line);
   print('printing data for $stationName');
 
   if (response.statusCode == 200) {

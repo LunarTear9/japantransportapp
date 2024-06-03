@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import 'dart:convert';
+import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'package:japanmetroline/alltrains.dart';
 import 'package:japanmetroline/stationinfo.dart';
@@ -147,6 +148,7 @@ final GlobalKey _mapKey = GlobalKey();
   @override
   void initState() {
     _generateMarkers();
+    startCountdown();
     super.initState();
     _loadMapStyle();
     // Fetch train data when widget is initialized
@@ -486,6 +488,7 @@ List<dynamic> _filterStationNames(dynamic query) {
     setState(() async {
       ListTileColor = const Color(0xffec6e65);
       line = 'Asakusa';
+    
       Stations = dataAsakusa;
       Pindata = dataAsakusa;
       
@@ -515,12 +518,40 @@ List<dynamic> _filterStationNames(dynamic query) {
       print('Button A clicked');
     });
   }
+void startCountdown() async {
+  int countdown = 2000;
+  Timer.periodic(Duration(seconds: 1), (timer) async {
+    countdown--;
+    print("Countdown: $countdown");
+    
+    if (countdown == 0 && isButton3Pressed == false) {
+      try {
+        final data = await fetchTrainData(line);
+        setState(() {
+          trainData = data;
+        });
+       
+      } catch (error) {
+        print('Error fetching train data: $error');
+      }
+    }
+     else if (countdown < 0){
+      // Perform something here every 10 seconds
+      print("Performing something...");
+      // Reset countdown to 10
+      countdown = 20;
+     }
+    
+  });
+}
+  
 
   void onButtonEClicked() async {
     setState(() async {
       ListTileColor = const Color(0xffce045b);
       line = 'Oedo';
       currentRegion = 'Oedo';
+    
       DurationVariable = 0;
       _generateMarkers();
       buttonTrigger = 1;
@@ -550,6 +581,7 @@ List<dynamic> _filterStationNames(dynamic query) {
       ListTileColor = const Color(0xffb0bf1e);
       line = 'Shinjuku';
       Stations = ShinjukuStations;
+  
       Pindata = Shinjukudata;
       _generateMarkers();
       stationNames = Pindata.map((station) => station['title']).toList();
@@ -629,130 +661,137 @@ class _HoverableIconButtonState extends State<HoverableIconButton> {
     );
   }
 }
-
 List<Map<String, dynamic>> Shinjukudata = [
   {
     'id': '1',
     'title': 'Shinjuku',
     'position': const LatLng(35.6896021,139.7004839), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'assetPath': 'lib/assets/2.png',
   },
   {
     'id': '2',
     'title': 'Shinjuku-sanchome',
     'position': const LatLng(35.6908636,139.7047682), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'assetPath': 'lib/assets/2(1)2.png',
   },
   {
     'id': '3',
     'title': 'Akebonobashi',
     'position': const LatLng(35.6923429,139.7225317), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'assetPath': 'lib/assets/2(1)3.png',
   },
   {
     'id': '4',
     'title': 'Ichigaya',
     'position': const LatLng(35.6910045,139.735467), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'assetPath': 'lib/assets/2(1)4.png',
   },
   {
     'id': '5',
     'title': 'Kudanshita',
     'position': const LatLng(35.6954587,139.7510729), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'assetPath': 'lib/assets/2(1)5.png',
   },
   {
     'id': '6',
     'title': 'Jinbocho',
     'position': const LatLng(35.6959019,139.7575118), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'assetPath': 'lib/assets/2(1)6.png',
   },
   {
     'id': '7',
     'title': 'Ogawamachi',
     'position': const LatLng(35.6951586,139.7667557), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'assetPath': 'lib/assets/2(1)7.png',
   },
   {
     'id': '8',
     'title': 'Iwamotocho',
     'position': const LatLng(35.6955489,139.7750715), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'assetPath': 'lib/assets/2(1)8.png',
   },
   {
-    'id': '9',
+     'id': '9',
+    'title': 'Bakuroyokoyama',
+    'position': const LatLng(35.693982,139.783073), // added this
+    'assetPath': 'lib/assets/2(1)9.png',
+  },
+
+
+
+  {
+ 'id': '10',
     'title': 'Hamacho',
-    'position': const LatLng(35.6884112,139.7876368), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
-  },
-  {
-    'id': '10',
-    'title': 'Morishita',
-    'position': const LatLng(35.6880153,139.7975693), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'position': const LatLng(35.6884112, 139.7876368), // Placeholder coordinates
+    'assetPath': 'lib/assets/2(1)10.png',
   },
   {
     'id': '11',
-    'title': 'Kikukawa',
-    'position': const LatLng(35.6883655,139.8059956), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'title': 'Morishita',
+    'position': const LatLng(35.6880153, 139.7975693), // Placeholder coordinates
+    'assetPath': 'lib/assets/2(1)11.png',
   },
   {
     'id': '12',
-    'title': 'Sumiyoshi',
-    'position': const LatLng(35.6889909,139.8157427), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'title': 'Kikukawa',
+    'position': const LatLng(35.6883655, 139.8059956), // Placeholder coordinates
+    'assetPath': 'lib/assets/2(1)12.png',
   },
   {
     'id': '13',
-    'title': 'Nishi-Ojima',
-    'position': const LatLng(35.6893517,139.8262506), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'title': 'Sumiyoshi',
+    'position': const LatLng(35.6889909, 139.8157427), // Placeholder coordinates
+    'assetPath': 'lib/assets/2(1)13.png',
   },
   {
     'id': '14',
-    'title': 'Ojima',
-    'position': const LatLng(35.6897503,139.8346515), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'title': 'Nishi-Ojima',
+    'position': const LatLng(35.6893517, 139.8262506), // Placeholder coordinates
+    'assetPath': 'lib/assets/2(1)14.png',
   },
   {
     'id': '15',
-    'title': 'Higashi-Ojima',
-    'position': const LatLng(35.6898852,139.8474303), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'title': 'Ojima',
+    'position': const LatLng(35.6897503, 139.8346515), // Placeholder coordinates
+    'assetPath': 'lib/assets/2(1)15.png',
   },
   {
     'id': '16',
-    'title': 'Funabori',
-    'position': const LatLng(35.6838116,139.8640594), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'title': 'Higashi-Ojima',
+    'position': const LatLng(35.6898852, 139.8474303), // Placeholder coordinates
+    'assetPath': 'lib/assets/2(1)16.png',
   },
   {
     'id': '17',
-    'title': 'Ichinoe',
-    'position': const LatLng(35.685903,139.882367), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'title': 'Funabori',
+    'position': const LatLng(35.6838116, 139.8640594), // Placeholder coordinates
+    'assetPath': 'lib/assets/2(1)17.png',
   },
   {
     'id': '18',
-    'title': 'Mizue',
-    'position': const LatLng(35.6932817,139.8976135), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'title': 'Ichinoe',
+    'position': const LatLng(35.685903, 139.882367), // Placeholder coordinates
+    'assetPath': 'lib/assets/2(1)18.png',
   },
   {
     'id': '19',
-    'title': 'Shinozaki',
-    'position': const LatLng(35.705976,139.9038004), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'title': 'Mizue',
+    'position': const LatLng(35.6932817, 139.8976135), // Placeholder coordinates
+    'assetPath': 'lib/assets/2(1)19.png',
   },
   {
     'id': '20',
+    'title': 'Shinozaki',
+    'position': const LatLng(35.705976, 139.9038004), // Placeholder coordinates
+    'assetPath': 'lib/assets/2(1)20.png',
+  },
+  {
+    'id': '21',
     'title': 'Motoyawata',
-    'position': const LatLng(35.7209044,139.9272774), // Placeholder coordinates
-    'assetPath': 'lib/assets/s2.png',
+    'position': const LatLng(35.7209044, 139.9272774), // Placeholder coordinates
+    'assetPath': 'lib/assets/(1)21.png',
   },
 ];
-
 
 List<Map<String, dynamic>> dataAsakusa = [
   {
