@@ -118,6 +118,7 @@ else {
 
   @override
   Widget build(BuildContext context) {
+    
     return Material(
       color: Colors.transparent, // Set the color to transparent
       child: Card(
@@ -157,7 +158,7 @@ else {
             ),
 Visibility(
   visible: isExpanded2,
-  child: Menu(trainNumber: widget.trainNumber,trainType: widget.trainType,railDirection: widget.raildirection,))
+  child: Menu(trainNumber: widget.trainNumber,trainType: widget.trainType,railDirection: widget.raildirection,lastStation: extractStationName(widget.lastStation),nextStation: getNextStation(extractStationName(widget.lastStation), widget.raildirection,),delay: getDelay(widget.delay)))
           ],
         ),
       ),
@@ -302,7 +303,10 @@ class Menu extends StatefulWidget {
   final trainNumber;
   final trainType;
   final railDirection;
-  const Menu({super.key,required this.trainNumber,required this.trainType,required this.railDirection});
+  final lastStation;
+  final nextStation;
+  final delay;
+  const Menu({super.key,required this.trainNumber,required this.trainType,required this.railDirection,required this.lastStation,required this.nextStation,required this.delay});
 
   @override
   State<Menu> createState() => _MenuState();
@@ -312,6 +316,10 @@ class _MenuState extends State<Menu> {
 
   @override
   Widget build(BuildContext context) {
+    
+    String lastStationImage = stationImageMap[(widget.lastStation)] ?? 'lib/assets/s2.png';
+  print(widget.nextStation);
+    String nextStationImage = stationImageMap[widget.nextStation] ?? 'lib/assets/s2.png';
         String direction = widget.railDirection.toLowerCase().contains('westbound') ? 'Westbound' : 'Eastbound';
     return ClipRRect(
       borderRadius: BorderRadius.only(bottomLeft: Radius.circular(24),bottomRight: Radius.circular(24)),
@@ -320,21 +328,44 @@ class _MenuState extends State<Menu> {
         width: double.infinity,
         height: 400,
       color: ListTileColor,
-      child: Column(children: [
-      Text('${widget.trainNumber}', style: GoogleFonts.roboto(fontSize: 42, color: Colors.white, fontWeight: FontWeight.bold),),Row(children: [
-        Column(children: [
-     /* !(widget.trainType == 'odpt.TrainType:Toei.Local') ? SizedBox(): Padding(
-        padding: const EdgeInsets.only(left:24.0),
-        child: Text('Express', style: GoogleFonts.roboto(fontSize: 24, color: Color.fromARGB(249, 188, 2, 2), fontWeight: FontWeight.bold,),),*/
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+
         
+      Text('${widget.trainNumber} ($direction)', style: GoogleFonts.roboto(fontSize: 42, color: Colors.white, fontWeight: FontWeight.bold),),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image(
+                
+                image: AssetImage(lastStationImage),height: 50, width: 50,),
+              Text("${widget.lastStation}",style: GoogleFonts.roboto(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold)),
+            ],
+          ),Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Icon(Icons.arrow_right_rounded, color: Colors.white, size: 50,),
+                
+                Padding(padding: EdgeInsets.only(top:38),child: widget.delay),
+              ],
+            ),
+          ),Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Image(image: AssetImage(nextStationImage),height: 50, width: 50,),
+              Text("${widget.nextStation}",style: GoogleFonts.roboto(fontSize: 23, color: Colors.white, fontWeight: FontWeight.bold)),
+
+            ],
+          )
+        ],
+      ),
       
-       Padding(
-         padding: const EdgeInsets.only(left: 24.0),
-         child: Text("Rail Direction : ${direction}", style: GoogleFonts.roboto(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold),),
-       ),
-        ])
-      
-      ])
+    
       
       
       ])
