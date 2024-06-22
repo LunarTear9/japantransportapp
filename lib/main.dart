@@ -72,6 +72,8 @@ Future<List<Map<String, dynamic>>> fetchTrainData(Line) async {
 
 void main() {
   runApp(const MyAppHome());
+
+  
 }
 
 class MyAppHome extends StatelessWidget {
@@ -80,6 +82,8 @@ class MyAppHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scrollBehavior: MyCustomScrollBehavior(),
+      
       debugShowCheckedModeBanner: false,
       title: 'MyApp',
       home: MyHomePage(),
@@ -789,7 +793,7 @@ List<Map<String, dynamic>> Shinjukudata = [
     'id': '21',
     'title': 'Motoyawata',
     'position': const LatLng(35.7209044, 139.9272774), // Placeholder coordinates
-    'assetPath': 'lib/assets/(1)21.png',
+    'assetPath': 'lib/assets/2(1)21.png',
   },
 ];
 
@@ -916,7 +920,7 @@ List<Map<String, dynamic>> dataAsakusa = [
   },
 ];
 Map<String, String> stationImageMap = {
-  'Shinjuku': 'lib/assets/2(1)1.png',
+  'Shinjuku': 'lib/assets/2.png',
   'Shinjuku-Sanchome': 'lib/assets/2(1)2.png',
   'Akebonobashi': 'lib/assets/2(1)3.png',
   'Ichigaya': 'lib/assets/2(1)4.png',
@@ -935,5 +939,5 @@ Map<String, String> stationImageMap = {
   'Ichinoe': 'lib/assets/2(1)18.png',
   'Mizue': 'lib/assets/2(1)19.png',
   'Shinozaki': 'lib/assets/2(1)20.png',
-  'Motoyawata': 'lib/assets/2(1)21.png',
+  'Motoyawata': 'lib/assets/(1)21.png',
 };

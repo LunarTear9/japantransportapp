@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'main.dart'; // Import TrainInfoCard widget if it's in a separate file.
@@ -17,31 +18,29 @@ class MyList extends StatelessWidget {
     } else if (trainData!.isEmpty) {
       return Center(child: Text('No trains available'));
     } else {
-      return CustomScrollView(
-        slivers: [
-          SliverList(
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                final train = trainData![index];
-                return TrainInfoCard(
-                  toStation: train['odpt:toStation'] ?? 'Please wait',
-                  lastStation: train['odpt:fromStation'] ?? '',
-                  trainNumber: train['odpt:trainNumber'] ?? '',
-                  raildirection: train['odpt:railDirection'] ?? '',
-                  trainType: train['odpt:trainType'] ?? '',
-                  delay: train['odpt:delay'] ?? '',
-                );
-              },
-              childCount: trainData!.length,
-            ),
-          ),
-         
-        ],
+      return    GridView.builder(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisSpacing: 10,
+          
+          childAspectRatio: 2.5,
+        ),
+        itemCount: trainData!.length,
+        itemBuilder: (context, index) {
+          final train = trainData![index];
+          return TrainInfoCard(
+            toStation: train['odpt:toStation'] ?? 'Please wait',
+            lastStation: train['odpt:fromStation'] ?? '',
+            trainNumber: train['odpt:trainNumber'] ?? '',
+            raildirection: train['odpt:railDirection'] ?? '',
+            trainType: train['odpt:trainType'] ?? '',
+            delay: train['odpt:delay'] ?? 0,
+          );
+        },
       );
     }
   }
 }
-
 class TrainInfoCard extends StatefulWidget {
   final String raildirection;
   final String toStation;
@@ -119,46 +118,82 @@ else {
   @override
   Widget build(BuildContext context) {
     
-    return Material(
-      color: Colors.transparent, // Set the color to transparent
-      child: Card(
-        margin: EdgeInsets.only(left: 40.0, right: 40, bottom: 10,top: 10),
+    return Padding(
+      padding: const EdgeInsets.only(left: 24.0,right: 24),
+      child: Material(
         color: Colors.transparent, // Set the color to transparent
-        elevation: 4, // Add shadow with elevation
-        child: Column(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: ListTile(
-                onTap: () {
-            setState(() {
-              isExpanded2 = !isExpanded2;
-            });
-            
-                },
-                trailing: SizedBox(width: getSizedBox(widget.delay),child: Row(children: [Padding(padding: EdgeInsets.only(right:14),child:getDelay(widget.delay)),isExpanded2? Icon(Icons.arrow_downward, color: Colors.white):Icon(Icons.arrow_forward_ios, color: Colors.white)],)),
-                tileColor: ListTileColor, // Use appropriate color variable
-                shape: RoundedRectangleBorder(
-                  borderRadius: !isExpanded2 ? BorderRadius.circular(12) : BorderRadius.only(
-                    topLeft: Radius.circular(12),
-                    topRight: Radius.circular(12),
-                  )
+        child:
+         
+         
+        
+         Column(
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: ListTile(
+                  onTap: () {
+              setState(() {
+                isExpanded2 = !isExpanded2;
+              });
+              
+                  },
+                 trailing: SizedBox(
+                  width: getSizedBox(widget.delay),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Padding(
+                        padding: EdgeInsets.only(right: 14),
+                        child: getDelay(widget.delay),
+                      ),
+                      isExpanded2
+                          ? Icon(Icons.arrow_downward, color: Colors.white)
+                          : Icon(Icons.arrow_forward_ios, color: Colors.white),
+                    ],
+                  ),
                 ),
-               
-                
-                title: Text('Train Number: ${widget.trainNumber}', style: TextStyle(color: Colors.white)),
+                tileColor: ListTileColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: !isExpanded2
+                      ? BorderRadius.circular(12)
+                      : BorderRadius.only(
+                          topLeft: Radius.circular(12),
+                          topRight: Radius.circular(12),
+                        ),
+                ),
+                title: Text(
+                  'Train Number: ${widget.trainNumber}',
+                  style: TextStyle(color: Colors.white),
+                ),
                 subtitle: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('To Station: ${extractStationName(widget.toStation)}', style: TextStyle(color: Colors.white)),
-                    Text('From: ${extractStationName(widget.lastStation)} -> To: ${getNextStation(extractStationName(widget.lastStation), widget.raildirection)}', style: TextStyle(color: Colors.white)),
+                    Text(
+                      'To Station: ${extractStationName(widget.toStation)}',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    Text(
+                      'From: ${extractStationName(widget.lastStation)} -> To: ${getNextStation(extractStationName(widget.lastStation), widget.raildirection)}',
+                      style: TextStyle(color: Colors.white),
+                    ),
                   ],
                 ),
               ),
             ),
-Visibility(
-  visible: isExpanded2,
-  child: Menu(trainNumber: widget.trainNumber,trainType: widget.trainType,railDirection: widget.raildirection,lastStation: extractStationName(widget.lastStation),nextStation: getNextStation(extractStationName(widget.lastStation), widget.raildirection,),delay: getDelay(widget.delay)))
+            AnimatedSize(
+              duration: Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              child: isExpanded2
+                  ? Menu(
+                      trainNumber: widget.trainNumber,
+                      trainType: widget.trainType,
+                      railDirection: widget.raildirection,
+                      lastStation: extractStationName(widget.lastStation),
+                      nextStation: getNextStation(extractStationName(widget.lastStation), widget.raildirection) ?? 'Loading...',
+                      delay: getDelay(widget.delay),
+                    )
+                  : SizedBox.shrink(),
+            ),
           ],
         ),
       ),
@@ -300,77 +335,113 @@ String? getNextStation(String lastStation, String railDirection) {
 }
 
 class Menu extends StatefulWidget {
-  final trainNumber;
-  final trainType;
-  final railDirection;
-  final lastStation;
-  final nextStation;
-  final delay;
-  const Menu({super.key,required this.trainNumber,required this.trainType,required this.railDirection,required this.lastStation,required this.nextStation,required this.delay});
+  final String trainNumber;
+  final String trainType;
+  final String railDirection;
+  final String lastStation;
+  final String nextStation;
+  final Widget delay;
+
+  const Menu({
+    super.key,
+    required this.trainNumber,
+    required this.trainType,
+    required this.railDirection,
+    required this.lastStation,
+    required this.nextStation,
+    required this.delay,
+  });
 
   @override
   State<Menu> createState() => _MenuState();
 }
 
 class _MenuState extends State<Menu> {
+  late PageController _pageController;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(
+      initialPage: Stations.indexWhere((station) => station['title'] == widget.lastStation),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    
-    String lastStationImage = stationImageMap[(widget.lastStation)] ?? 'lib/assets/s2.png';
-  print(widget.nextStation);
-    String nextStationImage = stationImageMap[widget.nextStation] ?? 'lib/assets/s2.png';
-        String direction = widget.railDirection.toLowerCase().contains('westbound') ? 'Westbound' : 'Eastbound';
+    String direction = widget.railDirection.toLowerCase().contains('westbound') ? 'Westbound' : 'Eastbound';
     return ClipRRect(
-      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(24),bottomRight: Radius.circular(24)),
+      borderRadius: BorderRadius.only(
+        bottomLeft: Radius.circular(24),
+        bottomRight: Radius.circular(24),
+      ),
       child: Container(
-       
         width: double.infinity,
-        height: 400,
-      color: ListTileColor,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-
-        
-      Text('${widget.trainNumber} ($direction)', style: GoogleFonts.roboto(fontSize: 42, color: Colors.white, fontWeight: FontWeight.bold),),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image(
-                
-                image: AssetImage(lastStationImage),height: 50, width: 50,),
-              Text("${widget.lastStation}",style: GoogleFonts.roboto(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold)),
-            ],
-          ),Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
+        height: 160,
+        color: ListTileColor,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '${widget.trainNumber} ($direction)',
+              style: GoogleFonts.roboto(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.arrow_right_rounded, color: Colors.white, size: 50,),
+                Expanded(
+                  child: SizedBox(
+                    height: 90,
+                    child: PageView.builder(
+                      controller: _pageController,
+                      scrollDirection: Axis.horizontal,
+                      itemCount: Stations.length,
+                      itemBuilder: (context, index) {
+                        final station = Stations[index];
+                        String stationTitle = station['title'];
+                        String stationImage = stationImageMap[stationTitle] ?? 'lib/assets/s2.png';
+
+                        return Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.arrow_left, color: Colors.white),
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Image(image: AssetImage(stationImage), height: 50, width: 50),
+                                Text(
+                                  stationTitle,
+                                  style: GoogleFonts.roboto(
+                                    fontSize: 24,
+                                    color: stationTitle == widget.nextStation ?Colors.yellow : stationTitle == widget.lastStation ? Colors.green[500] : Colors.white,
+                                    fontWeight: stationTitle == widget.nextStation ? FontWeight.bold : stationTitle == widget.lastStation? FontWeight.bold: FontWeight.normal,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Icon(Icons.arrow_right, color: Colors.white)
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ),
+               
                 
-                Padding(padding: EdgeInsets.only(top:38),child: widget.delay),
               ],
             ),
-          ),Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image(image: AssetImage(nextStationImage),height: 50, width: 50,),
-              Text("${widget.nextStation}",style: GoogleFonts.roboto(fontSize: 23, color: Colors.white, fontWeight: FontWeight.bold)),
-
-            ],
-          )
-        ],
-      ),
-      
-    
-      
-      
-      ])
-      
+          ],
+        ),
       ),
     );
   }
+}
+
+class MyCustomScrollBehavior extends MaterialScrollBehavior {
+  // Override behavior methods and getters like dragDevices
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+      };
 }
