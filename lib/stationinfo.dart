@@ -101,7 +101,7 @@ class _TrainInfoCardState extends State<TrainInfoCard> {
             ),
             key: Key(stationName), // Unique key for each ListTile
             tileColor: ListTileColor,
-            title: Text('$title', style: TextStyle(color: Colors.white),),
+            title: Text('$title', style: TextStyle(color: Colors.white,fontSize: 36),),
             subtitle: Text('$stationName', style: TextStyle(color: Colors.white),),
             onTap: () {
               setState(() {

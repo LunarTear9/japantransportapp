@@ -383,7 +383,7 @@ class _MenuState extends State<Menu> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              '${widget.trainNumber} ($direction)',
+              '${widget.trainNumber}',
               style: GoogleFonts.roboto(fontSize: 28, color: Colors.white, fontWeight: FontWeight.bold),
             ),
             Row(
@@ -404,7 +404,7 @@ class _MenuState extends State<Menu> {
                         return Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.arrow_left, color: Colors.white),
+                            direction == 'Westbound' ? Icon(Icons.arrow_left, color: Colors.white,size: 40,): Icon(Icons.arrow_right, color: Colors.white,size: 40),
                             Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -419,7 +419,7 @@ class _MenuState extends State<Menu> {
                                 ),
                               ],
                             ),
-                            Icon(Icons.arrow_right, color: Colors.white)
+                            direction == 'Westbound' ? Icon(Icons.arrow_left, color: Colors.white,size: 40): Icon(Icons.arrow_right, color: Colors.white,size: 40),
                           ],
                         );
                       },

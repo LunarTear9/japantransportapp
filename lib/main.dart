@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -12,12 +13,15 @@ import 'package:japanmetroline/stationinfo.dart';
 import 'package:text_scroll/text_scroll.dart';
 
 
+bool _count = false;
+bool resetflag = false;
 int DurationVariable = 0;
+String _currentTime = '';
 List<Map<String, dynamic>> Pindata = Shinjukudata;
 int uselessFlag = 0;
 dynamic Camera = CameraPosition(target: LatLng(35.6895, 139.6917), zoom: 12);
-Color ListTileColor = Color(0xffb0bf1e);
-String line = 'Shinjuku';
+Color ListTileColor = const Color(0xFFC8102E);
+String line = LanguageValue == false ?'Shinjuku': '新宿';
   final Key  keyTextScroll = const ObjectKey(1);
 dynamic physics = AlwaysScrollableScrollPhysics();
 bool value1 = false;
@@ -26,6 +30,7 @@ int buttonFlag = 1;
 String currentRegion = 'Shinjuku';
 dynamic buttonColor3 = ListTileColor;
 int buttonTrigger = 0;
+bool LanguageValue = false;
 List<Map<String, dynamic>> Stations = ShinjukuStations;
 dynamic buttonColor2 = const Color.fromARGB(148, 231, 231, 231);
 final Map<String, Marker> _markers = {};
@@ -76,6 +81,7 @@ void main() {
   
 }
 
+
 class MyAppHome extends StatelessWidget {
   const MyAppHome({Key? key});
 
@@ -83,10 +89,10 @@ class MyAppHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       scrollBehavior: MyCustomScrollBehavior(),
-      
       debugShowCheckedModeBanner: false,
       title: 'MyApp',
       home: MyHomePage(),
+      
     );
   }
 }
@@ -151,6 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
 final GlobalKey _mapKey = GlobalKey();
   @override
   void initState() {
+    _startClock();
     _generateMarkers();
     startCountdown();
     super.initState();
@@ -177,15 +184,43 @@ dynamic? selectedStation;
 List<dynamic> _filterStationNames(dynamic query) {
     return stationNames.where((station) => station.toLowerCase().contains(query.toLowerCase())).toList();
   }
+
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
+      floatingActionButton: Column(children: [
+        Padding(
+          padding: const EdgeInsets.only(top:50.0),
+          child: 
+          
+        
+        Padding(
+          padding: const EdgeInsets.only(top: 800.0),
+          child: IconButton(onPressed: (){
+ 
+showAlertDialog(context, "Settings", "Languages");
+
+
+          }, icon: Icon(Icons.settings,color: Color(0xFFC8102E),size: 50,)),
+        ))
+      ]),
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        
+        actions: [IconButton(onPressed: (){
+setState(() {
+  resetflag = !resetflag;
+});
+            
+          }, icon: Icon(Icons.refresh,color: Colors.white,size: 58,)
+          ,),
+        ],
+        title: Image.asset('lib/assets/Screenshot (4118).png',height: 100,width: 100,scale: 0.5,),
+        toolbarHeight: 100,
+        backgroundColor: Color(0xFFC8102E),
         elevation: 0,
-        centerTitle: true,
+        centerTitle: false,
         flexibleSpace: FlexibleSpaceBar(
           centerTitle: true,
           background: Row(
@@ -194,6 +229,7 @@ List<dynamic> _filterStationNames(dynamic query) {
               buildIconButton('lib/assets/A.png', onButtonAClicked),
               buildIconButton('lib/assets/E.png', onButtonEClicked),
               buildIconButton('lib/assets/s.png', onButtonSClicked),
+              
             ],
           ),
         ),
@@ -216,25 +252,33 @@ List<dynamic> _filterStationNames(dynamic query) {
                     padding: const EdgeInsets.only(top:120.0,left: 16,right:16),
                     child: SizedBox(
                       height: 1800,
-                      width: 1200,
+                      width: 1400,
                       child: Column(
                         children: [
                           Padding(
                             padding: const EdgeInsets.all(22.0),
-                            child: Text(
-                              '${_getCurrentTime()}',
-                              style: GoogleFonts.exo2(color: Colors.white),
-                              textScaleFactor: 4,
+                            child: ClockWidget()
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Container(
+                                width: 300,
+                                color: Color.fromARGB(146, 75, 75, 75),
+                                child: Center(
+                                  child: Text(
+                                    line == 'Asakusa' && LanguageValue == false ? 'Asakusa' : line == 'Asakusa' && LanguageValue == true ? '浅草線' : line == 'Oedo' && LanguageValue == false ? 'Oedo' : line == 'Oedo' && LanguageValue == true ? '大江戸線' : line == 'Shinjuku' && LanguageValue == false ? 'Shinjuku' : line == 'Shinjuku' && LanguageValue == true ? '新宿線' : 'Shinjuku Line',
+                                    style: GoogleFonts.exo2(color: ListTileColor,fontWeight:  FontWeight.bold),
+                                    textScaleFactor: 4,
+                                  ).animate().slideX(
+                                      begin: -0.2,
+                                      duration: Duration(milliseconds: 500 + DurationVariable)).fadeIn(
+                                      duration: Duration(milliseconds: 500)),
+                                ),
+                              ),
                             ),
                           ),
-                          Text(
-                            '$currentRegion',
-                            style: GoogleFonts.exo2(color: ListTileColor),
-                            textScaleFactor: 4,
-                          ).animate().slideX(
-                              begin: -0.2,
-                              duration: Duration(milliseconds: 500 + DurationVariable)).fadeIn(
-                              duration: Duration(milliseconds: 500)),
                           Row(
                             children: [
                               
@@ -259,7 +303,7 @@ List<dynamic> _filterStationNames(dynamic query) {
                                       isButton3Pressed = true;
                                     });
                                   },
-                                  child: Text("Station Info",style: TextStyle(color: Colors.white)),
+                                  child: Text(LanguageValue == false? LanguageMap['English']!['Station Info']!: LanguageMap['Japanese']!['Station Info']!,style: TextStyle(color: Colors.white)),
                                 ),
                               ),
                               // Add some spacing between buttons
@@ -284,7 +328,7 @@ List<dynamic> _filterStationNames(dynamic query) {
                                       isButton3Pressed = false;
                                     });
                                   },
-                                  child: Text("All Trains",style: TextStyle(color: Colors.white)),
+                                  child: Text(LanguageValue == false ? LanguageMap['English']!['All Trains']!: LanguageMap['Japanese']!['All Trains']!,style: TextStyle(color: Colors.white)),
                                 ),
                               ),
                             ],
@@ -293,7 +337,7 @@ List<dynamic> _filterStationNames(dynamic query) {
                             borderRadius: BorderRadius.only(bottomRight: Radius.circular(10), bottomLeft: Radius.circular(10)),
                             child: Container(
                               height: 1500,
-                              width: 1200,
+                              width: 1400,
                               color: const Color.fromARGB(148, 231, 231, 231),
                               child: !isButton3Pressed
                                   ? MyList(trainData: trainData)
@@ -317,16 +361,52 @@ List<dynamic> _filterStationNames(dynamic query) {
                                        
                                        },
                                         child: 
-                                        GoogleMap(
-                                         key: _mapKey,
-                                          onMapCreated: (GoogleMapController controller) {
-                                            _controller = controller;
-                                            _loadMapStyle();
+                                        InkWell(
+                                          onHover: (value){
+                                            if(value){
+                                              setState(() {
+                                               physics = NeverScrollableScrollPhysics();
+                                              });
+                                            }
+                                            else{
+                                              setState(() {
+                                                physics = AlwaysScrollableScrollPhysics();
+                                              });
+                                            }
+
                                           },
-                                          zoomGesturesEnabled: false,
-                                          webGestureHandling: WebGestureHandling.cooperative,
-                                          trafficEnabled: switchvalue1,
-                                           initialCameraPosition: Camera,markers: _markers.values.toSet()),
+                                          
+                                          child: GestureDetector(
+                                            
+                                            onLongPress: (){
+                                              
+                                                physics = NeverScrollableScrollPhysics();
+                                              
+                                            },
+                                            onTap: (){
+                                              setState(() {
+
+                                                physics = NeverScrollableScrollPhysics();
+                                              });
+                                            },
+                                            onPanStart: (DragStartDetails){
+physics = NeverScrollableScrollPhysics();
+                                            },
+                                            onPanEnd: (DragEndDetails){
+physics = AlwaysScrollableScrollPhysics();
+                                            },
+                                            child: GoogleMap(
+                                             key: _mapKey,
+                                              onMapCreated: (GoogleMapController controller) {
+                                                _controller = controller;
+                                                _loadMapStyle();
+                                              },
+                                              zoomGesturesEnabled: true,
+                                              webGestureHandling: WebGestureHandling.cooperative,
+                                              trafficEnabled: switchvalue1,
+                                               initialCameraPosition: Camera,markers: _markers.values.toSet()),
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -358,7 +438,7 @@ List<dynamic> _filterStationNames(dynamic query) {
                                             },
                                             decoration: InputDecoration(
                                               prefixIcon: Icon(Icons.search, color: Colors.black),
-                                              hintText: 'Search Station',
+                                              hintText:  LanguageValue == false ? (LanguageMap['English']!['Search Station']) : LanguageMap['Japanese']!['Search Station'],
                                               hintStyle: TextStyle(color: Colors.black),
                                               border: OutlineInputBorder(
                                                 borderRadius: BorderRadius.circular(12),
@@ -408,7 +488,8 @@ List<dynamic> _filterStationNames(dynamic query) {
                                         color: Color.fromARGB(164, 255, 255, 255),
                                         child: Padding(
                                           padding: const EdgeInsets.all(8.0),
-                                          child: Text( 'Show Traffic',style: TextStyle(color: ListTileColor,fontSize: 24),),
+                                          child: Text(  LanguageValue == false ? LanguageMap['English']![                                       'Show Traffic']! : LanguageMap['Japanese']!['Show Traffic'
+                                          ]!,style: TextStyle(color: ListTileColor,fontSize: 24),),
                                         ),),),
                                                                    Switch(
                                     activeColor: ListTileColor,
@@ -436,11 +517,7 @@ List<dynamic> _filterStationNames(dynamic query) {
                                             color: Color.fromARGB(146, 104, 104, 104),
                                             child: AnimatedContainer(
                                               duration: Duration(seconds: 1),
-                                              child: TextScroll(
-                                                key: keyTextScroll,
-                                                "$trainInfoText                                ",
-                                                style: TextStyle(color: ListTileColor, fontSize: 48),
-                                              ),
+                                              child: TextScrollWidget(trainInfoText: trainInfoText)
                                             ),
                                             
                                           ),
@@ -470,15 +547,35 @@ List<dynamic> _filterStationNames(dynamic query) {
         ),
       
     );
+    
+  }
+void refresh(){
+ setState(() {
+  print('refreshed');
+   
+ });
+
+}
+ void _startClock() {
+   
+    _currentTime = _getCurrentTime();
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      if(_count){
+      setState(() {
+        
+      });
+      _count = !_count;
+      }
+      
+    });
   }
 
   String _getCurrentTime() {
     var now = DateTime.now();
     var japanTime = now.toUtc().add(Duration(hours: 9)); // Japan timezone is UTC+9
-    var formatter = DateFormat('HH:mm');
+    var formatter = DateFormat('HH:mm'); // Include seconds for continuous update
     return formatter.format(japanTime);
   }
-
   Widget buildIconButton(String imagePath, VoidCallback onPressed) {
     return HoverableIconButton(
       imagePath: imagePath,
@@ -490,13 +587,13 @@ List<dynamic> _filterStationNames(dynamic query) {
 
   void onButtonAClicked() async {
     setState(() async {
-      ListTileColor = const Color(0xffec6e65);
+      //ListTileColor = const Color(0xffec6e65);
       line = 'Asakusa';
     
       Stations = dataAsakusa;
       Pindata = dataAsakusa;
       
-      currentRegion = 'Asakusa';
+      currentRegion =  LanguageValue == false ?'Asakusa': '浅草';
 
       stationNames = Pindata.map((station) => station['title']).toList();
       DurationVariable = 1;
@@ -528,11 +625,12 @@ void startCountdown() async {
     countdown--;
     print("Countdown: $countdown");
     
-    if (countdown == 0 && isButton3Pressed == false) {
+    if ((countdown == 0 && isButton3Pressed == false) || (resetflag)) {
       try {
         final data = await fetchTrainData(line);
         setState(() {
           trainData = data;
+          resetflag = !resetflag;
         });
        
       } catch (error) {
@@ -552,9 +650,9 @@ void startCountdown() async {
 
   void onButtonEClicked() async {
     setState(() async {
-      ListTileColor = const Color(0xffce045b);
+      //ListTileColor = const Color(0xffce045b);
       line = 'Oedo';
-      currentRegion = 'Oedo';
+      currentRegion =  LanguageValue == false ?'Oedo': '大江戸';
     
       DurationVariable = 0;
       _generateMarkers();
@@ -582,14 +680,14 @@ void startCountdown() async {
 
   void onButtonSClicked() async {
     setState(() async {
-      ListTileColor = const Color(0xffb0bf1e);
+      //ListTileColor = const Color(0xffb0bf1e);
       line = 'Shinjuku';
       Stations = ShinjukuStations;
   
       Pindata = Shinjukudata;
       _generateMarkers();
       stationNames = Pindata.map((station) => station['title']).toList();
-      currentRegion = 'Shinjuku';
+      currentRegion =  LanguageValue == false ?'Shinjuku': '新宿';
       DurationVariable = 2;
       if (isButton3Pressed == true) {
         isButton3Pressed = false;
@@ -649,8 +747,8 @@ class _HoverableIconButtonState extends State<HoverableIconButton> {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeInOut,
-            width: (_isHovered) ? 60.0 : 36.0, // Increased sizes
-            height: (_isHovered) ? 60.0 : 36.0, // Increased sizes
+            width: (_isHovered) ? 86.0 : 60.0, // Increased sizes
+            height: (_isHovered) ? 86.0 : 60.0, // Increased sizes
             decoration: BoxDecoration(
               border: Border.all(color: Colors.transparent),
             ),
@@ -717,6 +815,7 @@ List<Map<String, dynamic>> Shinjukudata = [
   {
      'id': '9',
     'title': 'Bakuroyokoyama',
+     
     'position': const LatLng(35.693982,139.783073), // added this
     'assetPath': 'lib/assets/2(1)9.png',
   },
@@ -941,3 +1040,205 @@ Map<String, String> stationImageMap = {
   'Shinozaki': 'lib/assets/2(1)20.png',
   'Motoyawata': 'lib/assets/(1)21.png',
 };
+
+class Settings extends StatefulWidget {
+  const Settings({super.key});
+
+  @override
+  State<Settings> createState() => _SettingsState();
+}
+
+class _SettingsState extends State<Settings> {
+  @override
+  Widget build(BuildContext context) {
+    return const Placeholder();
+  }
+}
+
+
+
+
+void showAlertDialog(BuildContext context, String title, String message) {
+  showGeneralDialog(
+    context: context,
+    barrierDismissible: true,
+    barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+    barrierColor: Colors.black54,
+    transitionDuration: const Duration(milliseconds: 1000),
+    pageBuilder: (context, animation, secondaryAnimation) {
+      return 
+      
+      Center(child:
+     SettingsDropdown(title: title,message: message)
+      );
+    },
+    transitionBuilder: (context, animation, secondaryAnimation, child) {
+      final curvedAnimation = CurvedAnimation(parent: animation, curve: Curves.easeInOut);
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(0.0, -1.0),
+          end: Offset.zero,
+        ).animate(curvedAnimation),
+        child: child,
+      );
+    },
+  );
+}
+
+class SettingsDropdown extends StatefulWidget {
+  final title;
+  final message;
+  const SettingsDropdown({super.key,required this.title,required this.message});
+
+  @override
+  State<SettingsDropdown> createState() => _SettingsDropdownState();
+}
+
+class _SettingsDropdownState extends State<SettingsDropdown> {
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+        borderRadius:  BorderRadius.circular(24),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Container(
+              
+              width: MediaQuery.of(context).size.width * 0.55,
+              height: MediaQuery.of(context).size.height * 0.55,
+              padding: EdgeInsets.all(16),
+              color: Color.fromARGB(255, 80, 0, 13),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+               
+            Text(
+              widget.title,
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,color: Colors.white),
+            ),
+            SizedBox(height: 16),
+            Text(
+              widget.message,
+              style: TextStyle(fontSize: 16,color: Colors.white),
+            ),
+            SizedBox(height: 16),
+           
+               Text(LanguageValue == false ? LanguageMap['English']! ['English'].toString()! : LanguageMap['Japanese']!['English'].toString()!,style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,color: Colors.white),),
+
+                  Checkbox(value: !LanguageValue, onChanged: (value){
+                    setState(() {
+                      if(LanguageValue){
+                      LanguageValue = !LanguageValue!;
+                      _count = !_count;
+                       _MyHomePageState().refresh();
+                      }
+                      print("Now the Language is $LanguageValue");
+                    });
+                  },checkColor: Colors.white,fillColor: MaterialStateProperty.all(Color(0xFFC8102E),),),
+                  
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(LanguageValue == true? LanguageMap['Japanese']! ['Japanese'].toString()! : LanguageMap['English']!['Japanese']! ,style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold,color: Colors.white),),
+                    ),
+
+                  Checkbox(value: LanguageValue, onChanged: (value){
+                    setState(() {
+                      if(!LanguageValue){
+                      LanguageValue = !LanguageValue!;
+                      _count = !_count;
+                      }
+                      print("Now the language is $LanguageValue");
+                    });},
+                    checkColor: Colors.white,fillColor: MaterialStateProperty.all(Color(0xFFC8102E),),
+                    ),
+                    SizedBox(height: 112),
+ TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK',style: TextStyle(color: Colors.white)),
+            ),
+                  
+                  
+                ],
+              ),
+            ),
+          )
+    );
+  }
+}
+
+Map<String, Map<String, String>> LanguageMap = {
+  'English': {
+    'English': 'English',
+    'Japanese': 'Japanese',
+    'All Trains': 'All Trains',
+    'Station Info': 'Station Info',
+    'Show Traffic': 'Show Traffic',
+    'Settings': 'Settings',
+    'Search Station': 'Search Station',
+    'Asakusa': 'Asakusa',
+    'Oedo': 'Oedo Line',
+    'Shinjuku': 'Shinjuku',
+  },
+  'Japanese': {
+    'English': '英語',
+    'Japanese': '日本語',
+    'All Trains': '全ての列車',
+    'Station Info': '駅情報',
+    'Show Traffic': '交通情報を表示',
+    'Settings': '設定',
+    'Search Station': '駅を検索',
+    'Asakusa': '浅草',
+    'Oedo': '大江戸線',
+    'Shinjuku': '新宿',
+  }
+};
+
+class TextScrollWidget extends StatelessWidget {
+  final String trainInfoText;
+
+  const TextScrollWidget({super.key, required this.trainInfoText});
+
+  @override
+  Widget build(BuildContext context) {
+    return TextScroll(
+                                                key: ValueKey(trainInfoText), 
+                                                "$trainInfoText                                                          ",
+                                                style: TextStyle(color: ListTileColor, fontSize: 48),
+                                              );
+  }
+}
+
+class ClockNotifier extends ValueNotifier<String> {
+  ClockNotifier() : super(_getCurrentTime()) {
+    Timer.periodic(Duration(seconds: 1), (timer) {
+      value = _getCurrentTime();
+    });
+  }
+
+  static String _getCurrentTime() {
+     var now = DateTime.now();
+    var japanTime = now.toUtc().add(Duration(hours: 9)); // Japan timezone is UTC+9
+    var formatter = DateFormat('HH:mm'); // Include seconds for continuous update
+    return formatter.format(japanTime);
+  }
+}
+
+class ClockWidget extends StatelessWidget {
+  final ClockNotifier notifier = ClockNotifier();
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder<String>(
+      valueListenable: notifier,
+      builder: (context, time, child) {
+        return Text(time,style: GoogleFonts.exo(color: Color.fromRGBO(255, 255, 255, 1),fontWeight: FontWeight.bold),textScaleFactor: 4,);
+      },
+    );
+  }
+}
+
+//added clock for setstate
+//added seperate clock for widget
+
+//currently 3 active timers at a time
