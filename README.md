@@ -1,9 +1,7 @@
-# Description
+# ( OLD )
 
-Contains Live Data for the Toei line of Japan 
+TOEI Line Train Information Application
 
-Information include:
+Lines included: Asakusa, Shinjuku, Oedo ( currently not supported )
 
-Live Station Info
-
-Live Train Info
+Uses the official Restful API from Open Data Public Transportation ( ODPT )
